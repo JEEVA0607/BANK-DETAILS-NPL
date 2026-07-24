@@ -895,6 +895,30 @@ Remarks     : ${bank.remarks}`;
 
     }
 
+    if (button.classList.contains("copyQrBtn")) {
+
+    try {
+
+        const res = await fetch(bank.qr);
+        const blob = await res.blob();
+
+        const item = new ClipboardItem({
+            [blob.type]: blob
+        });
+
+        await navigator.clipboard.write([item]);
+
+        showToast("QR Image Copied");
+
+    } catch (err) {
+
+        console.error(err);
+        showToast("Your browser does not allow image copy.");
+
+    }
+
+}
+
     // ---------------- DELETE ----------------
 
     if (button.classList.contains("deleteBtn")) {
