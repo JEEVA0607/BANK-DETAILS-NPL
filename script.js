@@ -192,6 +192,16 @@ db.collection("banks").onSnapshot((snapshot) => {
 
     });
 
+    homeCount.textContent = banks.length;
+
+belowCount.textContent = banks.filter(b => b.category === "10K Below").length;
+
+aboveCount.textContent = banks.filter(b => b.category === "10K Above").length;
+
+merchantCount.textContent = banks.filter(b => b.category === "Merchant").length;
+
+favoriteCountSide.textContent = banks.filter(b => b.favorite).length;
+
     totalBanks.textContent = banks.length;
 
     favoriteBanks.textContent =
