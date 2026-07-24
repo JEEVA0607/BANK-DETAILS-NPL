@@ -839,35 +839,6 @@ resetFavBtn.addEventListener("click", async () => {
 
 searchInput.addEventListener("input", renderBanks);
 
-// ---------------- COPY QR IMAGE ----------------
-
-if (button.classList.contains("copyQrBtn")) {
-
-    try {
-
-        const response = await fetch(bank.qr);
-
-        const blob = await response.blob();
-
-        await navigator.clipboard.write([
-            new ClipboardItem({
-                [blob.type]: blob
-            })
-        ]);
-
-        showToast("QR Image Copied");
-
-    } catch (err) {
-
-        console.error(err);
-
-        showToast("QR Copy Failed");
-
-    }
-
-}
-
-
 // =====================================
 // ACTION EVENTS
 // =====================================
@@ -883,8 +854,6 @@ bankContainer.addEventListener("click", async (e) => {
     if (!card) return;
 
     const bank = banks.find(b => b.id === card.dataset.id);
-
-    if (!bank) return;
 
     if (!bank) return;
 
@@ -985,6 +954,7 @@ bankContainer.addEventListener("dblclick", async (e) => {
     if (!bank) return;
 
     await db.collection("banks")
+    
         .doc(bank.id)
         .update({
             favorite: !bank.favorite
