@@ -160,14 +160,6 @@ const viewImage = document.getElementById("viewImage");
 // LOAD STORAGE
 // =====================================
 
-const savedBanks = localStorage.getItem("banks");
-
-if (savedBanks) {
-
-    banks = JSON.parse(savedBanks);
-
-}
-
 
 totalBanks.textContent = banks.length;
 
@@ -180,18 +172,34 @@ renderBanks();
 // SAVE STORAGE
 // =====================================
 
-function saveStorage() {
+// =====================================
+// FIREBASE LIVE SYNC
+// =====================================
 
-    localStorage.setItem(
+db.collection("banks").onSnapshot((snapshot) => {
 
-        "banks",
+    banks = [];
 
-        JSON.stringify(banks)
+    snapshot.forEach((doc) => {
 
-    );
+        banks.push({
 
-}
+            id: doc.id,
 
+            ...doc.data()
+
+        });
+
+    });
+
+    totalBanks.textContent = banks.length;
+
+    favoriteBanks.textContent =
+        banks.filter(bank => bank.favorite).length;
+
+    renderBanks();
+
+});
 
 // =====================================
 // OPEN ADD MODAL
@@ -369,22 +377,25 @@ if(selectedCategory===""){
 
     if (editingIndex === -1) {
 
-        banks.push(bank);
+    await db.collection("banks").add(bank);
 
-    } else {
+    showToast("Bank Added");
 
-        bank.favorite = banks[editingIndex].favorite;
-        banks[editingIndex] = bank;
+} else {
 
-    }
+    bank.favorite = banks[editingIndex].favorite;
 
-    saveStorage();
+    await db.collection("banks")
+        .doc(banks[editingIndex].id)
+        .set(bank);
 
-    renderBanks();
+    showToast("Bank Updated");
 
-    addModal.style.display = "none";
+}
 
-    clearForm();
+addModal.style.display = "none";
+
+clearForm();
 
 });
 
@@ -481,11 +492,11 @@ if (currentCategory === "FAVORITES") {
 
     }
 
-    filtered.forEach((bank) => {
+    filtered.forEach((bank, index) => {
 
         bankContainer.innerHTML += `
 
-        <div class="bankCard">
+        <div class="bankCard" data-id="${bank.id}">
 
             <div class="cardHeader">
 
@@ -772,15 +783,21 @@ restoreBtn.addEventListener("click", () => {
 // CLEAR ALL
 // =====================================
 
-clearAllBtn.addEventListener("click", () => {
+clearAllBtn.addEventListener("click", async () => {
 
     if (!confirm("Delete ALL Banks?")) return;
 
-    banks = [];
+    const snapshot = await db.collection("banks").get();
 
-    saveStorage();
+    const batch = db.batch();
 
-    renderBanks();
+    snapshot.forEach((doc) => {
+
+        batch.delete(doc.ref);
+
+    });
+
+    await batch.commit();
 
     optionsModal.style.display = "none";
 
@@ -792,13 +809,23 @@ clearAllBtn.addEventListener("click", () => {
 // RESET FAVORITES
 // =====================================
 
-resetFavBtn.addEventListener("click", () => {
+resetFavBtn.addEventListener("click", async () => {
 
-    banks.forEach(bank => bank.favorite = false);
+    const snapshot = await db.collection("banks").get();
 
-    saveStorage();
+    const batch = db.batch();
 
-    renderBanks();
+    snapshot.forEach((doc) => {
+
+        batch.update(doc.ref, {
+
+            favorite: false
+
+        });
+
+    });
+
+    await batch.commit();
 
     optionsModal.style.display = "none";
 
@@ -811,6 +838,34 @@ resetFavBtn.addEventListener("click", () => {
 // =====================================
 
 searchInput.addEventListener("input", renderBanks);
+
+// ---------------- COPY QR IMAGE ----------------
+
+if (button.classList.contains("copyQrBtn")) {
+
+    try {
+
+        const response = await fetch(bank.qr);
+
+        const blob = await response.blob();
+
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                [blob.type]: blob
+            })
+        ]);
+
+        showToast("QR Image Copied");
+
+    } catch (err) {
+
+        console.error(err);
+
+        showToast("QR Copy Failed");
+
+    }
+
+}
 
 
 // =====================================
@@ -827,9 +882,9 @@ bankContainer.addEventListener("click", async (e) => {
 
     if (!card) return;
 
-    const index = [...bankContainer.children].indexOf(card);
+    const bank = banks.find(b => b.id === card.dataset.id);
 
-    const bank = banks[index];
+    if (!bank) return;
 
     if (!bank) return;
 
@@ -875,21 +930,21 @@ Remarks     : ${bank.remarks}`;
 
     if (button.classList.contains("deleteBtn")) {
 
-        if (!confirm("Delete this bank?")) return;
+    if (!confirm("Delete this bank?")) return;
 
-        banks.splice(index, 1);
+    await db.collection("banks")
+        .doc(bank.id)
+        .delete();
 
-        saveStorage();
+    showToast("Bank Deleted");
 
-        renderBanks();
-
-    }
+}
 
     // ---------------- EDIT ----------------
 
     if (button.classList.contains("editBtn")) {
 
-        editingIndex = index;
+        editingIndex = banks.findIndex(b => b.id === bank.id);
 
         displayName.value = bank.display;
 
@@ -917,7 +972,7 @@ Remarks     : ${bank.remarks}`;
 // FAVORITE
 // =====================================
 
-bankContainer.addEventListener("dblclick", (e) => {
+bankContainer.addEventListener("dblclick", async (e) => {
 
     const header = e.target.closest(".favorite");
 
@@ -925,15 +980,15 @@ bankContainer.addEventListener("dblclick", (e) => {
 
     const card = header.closest(".bankCard");
 
-    const index = [...bankContainer.children].indexOf(card);
+    const bank = banks.find(b => b.id === card.dataset.id);
 
-    banks[index].favorite = !banks[index].favorite;
+    if (!bank) return;
 
-    banks.sort((a, b) => Number(b.favorite) - Number(a.favorite));
-
-    saveStorage();
-
-    renderBanks();
+    await db.collection("banks")
+        .doc(bank.id)
+        .update({
+            favorite: !bank.favorite
+        });
 
 });
 
@@ -986,25 +1041,45 @@ importFile.addEventListener("change", (e) => {
 
     const reader = new FileReader();
 
-    reader.onload = () => {
+    reader.onload = async () => {
 
-        try {
+    try {
 
-            banks = JSON.parse(reader.result);
+        const importedBanks = JSON.parse(reader.result);
 
-            saveStorage();
+        const snapshot = await db.collection("banks").get();
 
-            renderBanks();
+        const batch = db.batch();
 
-            showToast("Import Successful");
+        // പഴയ ബാങ്കുകൾ delete ചെയ്യുക
+        snapshot.forEach((doc) => {
 
-        } catch {
+            batch.delete(doc.ref);
 
-            showToast("Invalid Backup File");
+        });
+
+        await batch.commit();
+
+        // പുതിയ ബാങ്കുകൾ add ചെയ്യുക
+        for (const bank of importedBanks) {
+
+            delete bank.id;
+
+            await db.collection("banks").add(bank);
 
         }
 
-    };
+        showToast("Import Successful");
+
+    } catch (e) {
+
+        console.error(e);
+
+        showToast("Invalid Backup File");
+
+    }
+
+};
 
     reader.readAsText(file);
 
