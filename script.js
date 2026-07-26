@@ -849,6 +849,7 @@ resetFavBtn.addEventListener("click", async () => {
 
 searchInput.addEventListener("input", renderBanks);
 
+
 // =====================================
 // ACTION EVENTS
 // =====================================
@@ -905,25 +906,50 @@ Remarks     : ${bank.remarks}`;
 
     }
 
-    if (button.classList.contains("copyQrBtn")) {
+if (button.classList.contains("copyQrBtn")) {
 
     try {
 
-        const res = await fetch(bank.qr);
-        const blob = await res.blob();
+        const response = await fetch(bank.qr);
+        let blob = await response.blob();
 
-        const item = new ClipboardItem({
-            [blob.type]: blob
-        });
+        // JPEG → PNG
+        if (blob.type !== "image/png") {
 
-        await navigator.clipboard.write([item]);
+            const img = new Image();
+
+            img.src = URL.createObjectURL(blob);
+
+            await new Promise(resolve => img.onload = resolve);
+
+            const canvas = document.createElement("canvas");
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            const ctx = canvas.getContext("2d");
+
+            ctx.drawImage(img, 0, 0);
+
+            blob = await new Promise(resolve =>
+                canvas.toBlob(resolve, "image/png")
+            );
+
+        }
+
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                "image/png": blob
+            })
+        ]);
 
         showToast("QR Image Copied");
 
     } catch (err) {
 
         console.error(err);
-        showToast("Your browser does not allow image copy.");
+
+        showToast("QR Copy Failed");
 
     }
 
