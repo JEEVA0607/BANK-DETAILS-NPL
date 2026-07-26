@@ -50,6 +50,10 @@ const favoriteBtn = document.getElementById("favoriteBtn");
 
 const favoriteCountSide = document.getElementById("favoriteCountSide");
 
+const closedBtn = document.getElementById("closedBtn");
+
+const closedCount = document.getElementById("closedCount");
+
 // =========================
 // OPTIONS
 // =========================
@@ -75,6 +79,7 @@ console.log(logoutBtn);
 console.log(optionsModal);
 
 
+
 // ===========================
 // SIDEBAR BUTTONS
 // ===========================
@@ -87,6 +92,19 @@ const aboveBtn = document.getElementById("aboveBtn");
 
 const merchantBtn = document.getElementById("merchantBtn");
 
+closedBtn.addEventListener("click", () => {
+
+    currentCategory = "CLOSED";
+
+    document.querySelectorAll(".menuBtn").forEach(btn =>
+        btn.classList.remove("active")
+    );
+
+    closedBtn.classList.add("active");
+
+    renderBanks();
+
+});
 
 favoriteBtn.addEventListener("click", () => {
 
@@ -202,10 +220,24 @@ merchantCount.textContent = banks.filter(b => b.category === "Merchant").length;
 
 favoriteCountSide.textContent = banks.filter(b => b.favorite).length;
 
+closedCount.textContent = banks.filter(b => b.status === "CLOSED").length;
+
     totalBanks.textContent = banks.length;
 
     favoriteBanks.textContent =
         banks.filter(bank => bank.favorite).length;
+
+        const totalBanks2 = document.getElementById("totalBanks2");
+const favoriteBanks2 = document.getElementById("favoriteBanks2");
+
+if(totalBanks2){
+    totalBanks2.textContent = banks.length;
+}
+
+if(favoriteBanks2){
+    favoriteBanks2.textContent =
+        banks.filter(bank => bank.favorite).length;
+}
 
     renderBanks();
 
@@ -381,7 +413,10 @@ if(selectedCategory===""){
 
         remarks: remarks.value.trim(),
 
-        favorite: false
+        favorite: false,
+
+        status:"ACTIVE"
+        
 
     };
 
@@ -442,11 +477,21 @@ merchantCount.textContent = banks.filter(b => b.category === "Merchant").length;
 
 favoriteCountSide.textContent = banks.filter(bank => bank.favorite).length;
 
+closedCount.textContent = banks.filter(bank => bank.status === "CLOSED").length;
+
+closedCount.textContent = banks.filter(b => b.status === "CLOSED").length;
+
 function renderBanks() {
     
     bankContainer.innerHTML = "";
 
     let filteredBanks = [...banks];
+
+    if (currentCategory !== "CLOSED") {
+
+    filteredBanks = filteredBanks.filter(bank => bank.status !== "CLOSED");
+
+}
 
 if (currentCategory === "10K Below") {
 
@@ -463,6 +508,12 @@ else if (currentCategory === "10K Above") {
 else if (currentCategory === "Merchant") {
 
     filteredBanks = filteredBanks.filter(bank => bank.category === "Merchant");
+
+}
+
+else if (currentCategory === "CLOSED") {
+
+    filteredBanks = filteredBanks.filter(bank => bank.status === "CLOSED");
 
 }
 
@@ -630,41 +681,45 @@ if (currentCategory === "FAVORITES") {
 
             <div class="actionBar">
 
-                <button class="actionBtn viewBtn">
+${currentCategory === "CLOSED" ? `
 
-                    👁 View
+    <button class="actionBtn reactivateBtn">
+        ✅ Reactivate
+    </button>
 
-                </button>
+    <button class="actionBtn deleteBtn">
+        🗑 Delete
+    </button>
 
-                <button class="actionBtn copyQrBtn">
+` : `
 
-                    📷 Copy QR
+    <button class="actionBtn viewBtn">
+        👁 View
+    </button>
 
-                </button>
+    <button class="actionBtn copyQrBtn">
+        📷 Copy QR
+    </button>
 
-                <button class="actionBtn copyDetailsBtn">
+    <button class="actionBtn copyDetailsBtn">
+        📄 Details
+    </button>
 
-                    📄 Details
+    <button class="actionBtn copyAccBtn">
+        📦 Move
+    </button>
 
-                </button>
+    <button class="actionBtn editBtn">
+        ✏ Edit
+    </button>
 
-                <button class="actionBtn copyAccBtn">
+    <button class="actionBtn deleteBtn">
+        🗑 Delete
+    </button>
 
-                    #️⃣ A/C
+`}
 
-                </button>
-
-                <button class="actionBtn editBtn">
-
-                    ✏ Edit
-
-                </button>
-
-                <button class="actionBtn deleteBtn">
-
-                    🗑 Delete
-
-                </button>
+</div>
 
             </div>
 
@@ -762,18 +817,6 @@ logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("loggedIn");
 
     window.location.href = "index.html";
-
-});
-
-// =====================================
-// BACKUP
-// =====================================
-
-backupBtn.addEventListener("click", () => {
-
-    exportBtn.click();
-
-    optionsModal.style.display = "none";
 
 });
 
@@ -896,15 +939,7 @@ Remarks     : ${bank.remarks}`;
 
     }
 
-    // ---------------- COPY ACCOUNT ----------------
 
-    if (button.classList.contains("copyAccBtn")) {
-
-        await navigator.clipboard.writeText(bank.account);
-
-        showToast("Account Number Copied");
-
-    }
 
 if (button.classList.contains("copyQrBtn")) {
 
@@ -955,6 +990,22 @@ if (button.classList.contains("copyQrBtn")) {
 
 }
 
+if (button.classList.contains("reactivateBtn")) {
+
+    if (!confirm("Reactivate this bank?")) return;
+
+    await db.collection("banks")
+        .doc(bank.id)
+        .update({
+            status: "ACTIVE"
+        });
+
+    showToast("Bank Reactivated");
+
+    return;
+
+}
+
     // ---------------- DELETE ----------------
 
     if (button.classList.contains("deleteBtn")) {
@@ -966,6 +1017,24 @@ if (button.classList.contains("copyQrBtn")) {
         .delete();
 
     showToast("Bank Deleted");
+
+}
+
+if (button.classList.contains("copyAccBtn")) {
+
+    if (!confirm("Move this bank to Temporary Closed?")) return;
+
+    bank.status = "CLOSED";
+
+    await db.collection("banks")
+        .doc(bank.id)
+        .update({
+            status: "CLOSED"
+        });
+
+    showToast("Moved to Temporary Closed");
+
+    return;
 
 }
 
@@ -1214,4 +1283,92 @@ function showToast(message){
 
     },2000);
 
+}
+
+// =====================================
+// RIGHT SIDEBAR BUTTONS
+// =====================================
+
+const addBankBtn2 = document.getElementById("addBankBtn2");
+const exportBtn2 = document.getElementById("exportBtn2");
+const importBtn2 = document.getElementById("importBtn2");
+
+const settingsBtn2 = document.getElementById("settingsBtn2");
+
+const gridViewBtn = document.getElementById("gridViewBtn");
+const listViewBtn = document.getElementById("listViewBtn");
+
+
+// Add Bank
+if(addBankBtn2){
+    addBankBtn2.addEventListener("click", () => {
+        editingIndex = -1;
+clearForm();
+addModal.style.display = "flex";
+    });
+}
+
+// Export
+if(exportBtn2){
+    exportBtn2.addEventListener("click", () => {
+        const blob = new Blob(
+    [JSON.stringify(banks, null, 2)],
+    { type: "application/json" }
+);
+
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+
+a.href = url;
+a.download = "BankQR_Backup.json";
+a.click();
+
+URL.revokeObjectURL(url);
+    });
+}
+
+// Import
+if(importBtn2){
+    importBtn2.addEventListener("click", () => {
+        importFile.click();
+    });
+}
+
+// Settings
+if(settingsBtn2){
+    settingsBtn2.addEventListener("click", () => {
+        optionsModal.style.display = "flex";
+    });
+}
+
+if(gridViewBtn){
+    gridViewBtn.addEventListener("click", () => {
+
+        document.body.classList.remove("listMode");
+        document.body.classList.add("gridMode");
+
+        localStorage.setItem("viewMode","grid");
+
+    });
+}
+
+if(listViewBtn){
+    listViewBtn.addEventListener("click", () => {
+
+        document.body.classList.remove("gridMode");
+        document.body.classList.add("listMode");
+
+        localStorage.setItem("viewMode","list");
+
+    });
+}
+
+
+// Load saved mode
+const savedView = localStorage.getItem("viewMode");
+
+if(savedView === "list"){
+    document.body.classList.add("listMode");
+    document.body.classList.remove("gridMode");
 }
