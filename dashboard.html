@@ -58,6 +58,11 @@
     <span id="favoriteCountSide">0</span>
 </button>
 
+<button class="menuBtn" id="closedBtn">
+    🚫 Temporary Closed
+    <span id="closedCount">0</span>
+</button>
+
             <button class="menuBtn" id="optionsBtn">
     ⚙️ Options
 </button>
@@ -73,11 +78,17 @@
 
         </div>
 
+        
+
         <!-- Main Content -->
 
     <!-- MAIN -->
+     
 
     <div class="mainContent">
+
+        <div class="centerContent"></div>
+        
 
     <!-- ========================= -->
     <!-- HEADER -->
@@ -95,7 +106,7 @@
             type="text"
             id="searchInput"
             placeholder="Search Bank...">
-
+             
     </div>
 
 
@@ -164,7 +175,86 @@
 
     <div id="bankContainer">
 
+        </div>
+
     </div>
+
+    <!-- ========================= -->
+<!-- RIGHT SIDEBAR -->
+<!-- ========================= -->
+
+<div class="rightSidebar">
+
+    <div class="rightTitle">
+        Control Panel
+    </div>
+
+    <div class="rightGroup">
+
+        <button id="addBankBtn2" class="rightBtn">
+            ➕ Add Bank
+        </button>
+
+        <button id="exportBtn2" class="rightBtn">
+            📤 Export
+        </button>
+
+        <button id="importBtn2" class="rightBtn">
+            📥 Import
+        </button>
+
+    </div>
+
+    <div class="rightTitle">
+        Statistics
+    </div>
+
+    <div class="statCard">
+
+        <div>Total Banks</div>
+
+        <strong id="totalBanks2">0</strong>
+
+    </div>
+
+    <div class="statCard">
+
+        <div>Favorites</div>
+
+        <strong id="favoriteBanks2">0</strong>
+
+    </div>
+
+    <div class="rightTitle">
+        View
+    </div>
+
+    <button class="rightBtn" id="gridViewBtn">
+
+        🔳 Grid View
+
+    </button>
+
+    <button class="rightBtn" id="listViewBtn">
+
+        📋 List View
+
+    </button>
+
+    <div class="rightTitle">
+
+        System
+
+    </div>
+
+    <button class="rightBtn" id="settingsBtn2">
+
+        ⚙ Settings
+
+    </button>
+
+</div>
+    
 
 </div>
 
@@ -338,10 +428,6 @@
                 ⭐ Reset Favorites
             </button>
 
-            <button id="logoutBtn" class="optionBtn">
-                🚪 Logout
-            </button>
-
             <button id="closeOptions" class="optionBtn closeOption">
                 ✖ Close
             </button>
@@ -360,6 +446,9 @@
 <script src="firebase.js"></script>
 
 <script src="script.js"></script>
+
+
+<body class="gridMode"></body>
 
 </body>
 </html>
