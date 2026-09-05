@@ -930,8 +930,7 @@ bankContainer.addEventListener("click", async (e) => {
 `Holder Name : ${bank.holder}
 Account No  : ${bank.account}
 Bank Name   : ${bank.bank}
-Branch Name : ${bank.branch}
-Remarks     : ${bank.remarks}`;
+Branch Name : ${bank.branch}`;
 
         await navigator.clipboard.writeText(text);
 
