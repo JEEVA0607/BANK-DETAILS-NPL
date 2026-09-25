@@ -360,13 +360,14 @@ if(selectedCategory===""){
 
     }
 
-    if (editingIndex === -1 &&
-        (bankLogo.files.length === 0 || qrImage.files.length === 0)) {
+if (editingIndex === -1 &&
+    qrImage.files.length === 0) {
 
-        showToast("Select Bank logo and QR Image");
-        return;
+    showToast("Select QR Image");
+    return;
 
-    }
+}
+
 
     let logoData = "";
     let qrData = "";
