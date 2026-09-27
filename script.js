@@ -136,7 +136,68 @@ const viewModal = document.getElementById("viewModal");
 
 const displayName = document.getElementById("displayName");
 
-const bankLogo = document.getElementById("bankLogo");
+let bankLogos = [];
+
+const defaultBankNames = [
+
+    "Agricultural Development Bank Ltd.",
+    "Best Finance Company Ltd.",
+    "Central Finance Ltd",
+    "Citizens Bank International Limited",
+    "Corporate Development Bank Ltd.",
+    "Everest Bank Limited",
+    "Excel Development Bank Ltd.",
+    "Garima Bikas Bank Limited",
+    "Global IME Bank Limited",
+    "Goodwill Finance Limited",
+    "Green Development Bank Ltd.",
+    "Guheswori Merchant Banking and Finance Limited",
+    "Gurkhas Finance Limited",
+    "Himalayan Bank Limited",
+    "ICFC Finance Limited",
+    "Janaki Finance Ltd.",
+    "Jyoti Bikash Bank Ltd",
+    "Kamana Sewa Bikas Bank Ltd.",
+    "Kumari Bank Limited",
+    "Laxmi Sunrise Bank Limited",
+    "Lumbini Bikas Bank Limited",
+    "Machhapuchchhre Bank Limited",
+    "Mahalaxmi Bikas Bank Ltd.",
+    "Manjushree Finance Limited",
+    "Miteri Development Bank Limited",
+    "Muktinath Bikas Bank Limited",
+    "Multipurpose Finance Limited",
+    "Nabil Bank Limited",
+    "Narayani Development Bank Limited",
+    "Nepal Bank Limited",
+    "Nepal Finance Limited",
+    "Nepal Infrastructure Bank Ltd.",
+    "Nepal Investment Mega Bank Limited",
+    "Nepal SBI Bank Limited",
+    "NIC Asia Bank Limited",
+    "NMB Bank Limited",
+    "Pokhara Finance Ltd.",
+    "Prabhu Bank Limited",
+    "Prime Commercial Bank Limited",
+    "Progressive Finance Co. Ltd.",
+    "Rastriya Banijya Bank Limited",
+    "Reliance Finance Ltd.",
+    "Salapa Bikas Bank Ltd.",
+    "Samriddhi Finance Company Ltd.",
+    "Sanima Bank Ltd.",
+    "Saptakoshi Development Bank Ltd.",
+    "Shangrila Development Bank Limited",
+    "Shine Resunga Development Bank Ltd.",
+    "Shree Investment & Finance Co. Limited",
+    "Siddhartha Bank Limited",
+    "Sindhu Bikash Bank Ltd.",
+    "Standard Chartered Bank Nepal Limited"
+
+];
+
+
+let selectedBankLogo = "";
+
 
 const qrImage = document.getElementById("qrImage");
 
@@ -157,6 +218,23 @@ const bankName = document.getElementById("bankName");
 const branchName = document.getElementById("branchName");
 
 const remarks = document.getElementById("remarks");
+
+// =====================================
+// BANK DROPDOWN
+// =====================================
+
+const bankSearchInput =
+    document.getElementById("bankSearchInput");
+
+const bankDropdown =
+    document.getElementById("bankDropdown");
+
+const selectedBankPreview =
+    document.getElementById("selectedBankPreview");
+
+const selectedBankText =
+    document.getElementById("selectedBankText");
+
 
 
 // ---------- BUTTONS ----------
@@ -179,28 +257,20 @@ const viewImage = document.getElementById("viewImage");
 // =====================================
 
 
-totalBanks.textContent = banks.length;
-
-favoriteBanks.textContent = banks.filter(bank => bank.favorite).length;
-
-renderBanks();
-
-
 // =====================================
 // SAVE STORAGE
 // =====================================
-
 // =====================================
-// FIREBASE LIVE SYNC
+// BANK LOGOS LIVE SYNC
 // =====================================
 
-db.collection("banks").onSnapshot((snapshot) => {
+db.collection("bankLogos").onSnapshot((snapshot) => {
 
-    banks = [];
+    bankLogos = [];
 
     snapshot.forEach((doc) => {
 
-        banks.push({
+        bankLogos.push({
 
             id: doc.id,
 
@@ -210,38 +280,101 @@ db.collection("banks").onSnapshot((snapshot) => {
 
     });
 
-    homeCount.textContent = banks.length;
+    renderBankDropdown();
 
-belowCount.textContent = banks.filter(b => b.category === "10K Below").length;
+    renderBankLogoManager();
 
-aboveCount.textContent = banks.filter(b => b.category === "10K Above").length;
+});
 
-merchantCount.textContent = banks.filter(b => b.category === "Merchant").length;
 
-favoriteCountSide.textContent = banks.filter(b => b.favorite).length;
 
-closedCount.textContent = banks.filter(b => b.status === "CLOSED").length;
+// =====================================
+// FIREBASE LIVE SYNC
+// =====================================
 
-    totalBanks.textContent = banks.length;
+console.log("POPUP JS STARTED");
 
-    favoriteBanks.textContent =
-        banks.filter(bank => bank.favorite).length;
+db.collection("banks").onSnapshot((snapshot) => {
 
-        const totalBanks2 = document.getElementById("totalBanks2");
-const favoriteBanks2 = document.getElementById("favoriteBanks2");
+    console.log("FIREBASE CONNECTED");
+    console.log("BANK COUNT:", snapshot.size);
 
-if(totalBanks2){
-    totalBanks2.textContent = banks.length;
-}
+    banks = [];
 
-if(favoriteBanks2){
-    favoriteBanks2.textContent =
-        banks.filter(bank => bank.favorite).length;
-}
+    snapshot.forEach((doc) => {
+
+        console.log("BANK:", doc.id, doc.data());
+
+        banks.push({
+            id: doc.id,
+            ...doc.data()
+        });
+
+    });
+
+    console.log("BANKS ARRAY:", banks);
 
     renderBanks();
 
 });
+
+
+    db.collection("banks").onSnapshot((snapshot) => {
+
+        banks = [];
+
+        snapshot.forEach((doc) => {
+
+            banks.push({
+                id: doc.id,
+                ...doc.data()
+            });
+
+        });
+
+        homeCount.textContent = banks.length;
+
+        belowCount.textContent =
+            banks.filter(b => b.category === "10K Below").length;
+
+        aboveCount.textContent =
+            banks.filter(b => b.category === "10K Above").length;
+
+        merchantCount.textContent =
+            banks.filter(b => b.category === "Merchant").length;
+
+        favoriteCountSide.textContent =
+            banks.filter(b => b.favorite).length;
+
+        closedCount.textContent =
+            banks.filter(b => b.status === "CLOSED").length;
+
+        totalBanks.textContent = banks.length;
+
+        favoriteBanks.textContent =
+            banks.filter(b => b.favorite).length;
+
+        const totalBanks2 =
+            document.getElementById("totalBanks2");
+
+        const favoriteBanks2 =
+            document.getElementById("favoriteBanks2");
+
+        if (totalBanks2) {
+            totalBanks2.textContent = banks.length;
+        }
+
+        if (favoriteBanks2) {
+            favoriteBanks2.textContent =
+                banks.filter(b => b.favorite).length;
+        }
+
+    renderBanks();
+
+    renderBankDropdown();
+
+});
+
 
 // =====================================
 // OPEN ADD MODAL
@@ -307,8 +440,6 @@ function clearForm() {
 
     displayName.value = "";
 
-    bankLogo.value = "";
-
     qrImage.value = "";
 
     holderName.value = "";
@@ -317,15 +448,35 @@ function clearForm() {
 
     bankName.value = "";
 
+    bankSearchInput.value = "";
+
     branchName.value = "";
 
     remarks.value = "";
+
+    selectedBankLogo = "";
+
+    logoPreview.src = "";
+
+    logoPreview.style.display = "none";
+
+    selectedBankText.textContent =
+        "No Bank Selected";
 
     extraToggle.checked = false;
 
     extraSection.style.display = "none";
 
+    document.querySelectorAll(
+        'input[name="category"]'
+    ).forEach(item => {
+
+        item.checked = false;
+
+    });
+
 }
+
 
 // =====================================
 // SAVE BANK
@@ -369,23 +520,23 @@ if (editingIndex === -1 &&
 }
 
 
-    let logoData = "";
-    let qrData = "";
+let logoData = "";
+let qrData = "";
 
-    // Keep old images while editing
-    if (editingIndex !== -1) {
+if (editingIndex !== -1) {
 
-        logoData = banks[editingIndex].logo;
-        qrData = banks[editingIndex].qr;
+    logoData = banks[editingIndex].logo || "";
 
-    }
+    qrData = banks[editingIndex].qr || "";
 
-    // New Logo
-    if (bankLogo.files.length > 0) {
+}
 
-        logoData = await fileToBase64(bankLogo.files[0]);
+if (selectedBankLogo) {
 
-    }
+    logoData = selectedBankLogo;
+
+}
+
 
     // New QR
     if (qrImage.files.length > 0) {
@@ -394,56 +545,82 @@ if (editingIndex === -1 &&
 
     }
 
-    const bank = {
+const bank = {
 
-        display: displayName.value.trim(),
+    display: displayName.value.trim(),
 
-        logo: logoData,
+    logo: logoData,
 
-        qr: qrData,
+    qr: qrData,
 
-        category:selectedCategory,
+    category: selectedCategory,
 
-        holder: holderName.value.trim(),
+    holder: holderName.value.trim(),
 
-        account: accountNumber.value.trim(),
+    account: accountNumber.value.trim(),
 
-        bank: bankName.value.trim(),
+    bank: bankName.value.trim(),
 
-        branch: branchName.value.trim(),
+    branch: branchName.value.trim(),
 
-        remarks: remarks.value.trim(),
+    remarks: remarks.value.trim(),
 
-        favorite: false,
+    favorite:
+        editingIndex !== -1
+            ? banks[editingIndex].favorite
+            : false,
 
-        status:"ACTIVE"
-        
+    status:
+        editingIndex !== -1
+            ? (banks[editingIndex].status || "ACTIVE")
+            : "ACTIVE"
 
-    };
+};
 
-    if (editingIndex === -1) {
+try {
 
-    await db.collection("banks").add(bank);
+    if (editingIndex !== -1) {
 
-    showToast("Bank Added");
+        const bankId = banks[editingIndex].id;
 
-} else {
+        await db
+            .collection("banks")
+            .doc(bankId)
+            .update(bank);
 
-    bank.favorite = banks[editingIndex].favorite;
+        showToast("Bank Updated");
 
-    await db.collection("banks")
-        .doc(banks[editingIndex].id)
-        .set(bank);
+    } else {
 
-    showToast("Bank Updated");
+        await db
+            .collection("banks")
+            .add({
+
+                ...bank,
+
+                createdAt:
+                    firebase.firestore.FieldValue.serverTimestamp()
+
+            });
+
+        showToast("Bank Added");
+
+    }
+
+    addModal.style.display = "none";
+
+    clearForm();
+
+} catch (error) {
+
+    console.error("Bank Save Error:", error);
+
+    showToast("Bank Save Failed");
 
 }
 
-addModal.style.display = "none";
-
-clearForm();
-
 });
+
 
 
 // =====================================
@@ -464,25 +641,15 @@ function fileToBase64(file) {
 
 }
 
+
+
 // =====================================
 // RENDER BANKS
 // =====================================
 
-homeCount.textContent = banks.length;
-
-belowCount.textContent = banks.filter(b => b.category === "10K Below").length;
-
-aboveCount.textContent = banks.filter(b => b.category === "10K Above").length;
-
-merchantCount.textContent = banks.filter(b => b.category === "Merchant").length;
-
-favoriteCountSide.textContent = banks.filter(bank => bank.favorite).length;
-
-closedCount.textContent = banks.filter(bank => bank.status === "CLOSED").length;
-
-closedCount.textContent = banks.filter(b => b.status === "CLOSED").length;
 
 function renderBanks() {
+    
     
     bankContainer.innerHTML = "";
 
@@ -524,19 +691,20 @@ if (currentCategory === "FAVORITES") {
 
 }
 
-    let keyword = searchInput.value.toLowerCase();
+let keyword = searchInput.value.toLowerCase();
 
-    let filtered = filteredBanks.filter(bank =>
+let filtered = filteredBanks.filter(bank =>
 
-    bank.display.toLowerCase().includes(keyword) ||
+    (bank.display || "").toLowerCase().includes(keyword) ||
 
-    bank.holder.toLowerCase().includes(keyword) ||
+    (bank.holder || "").toLowerCase().includes(keyword) ||
 
-    bank.account.toLowerCase().includes(keyword) ||
+    (bank.account || "").toLowerCase().includes(keyword) ||
 
-    bank.bank.toLowerCase().includes(keyword)
+    (bank.bank || "").toLowerCase().includes(keyword)
 
 );
+
 
     if (filtered.length === 0) {
 
@@ -1052,6 +1220,33 @@ if (button.classList.contains("copyAccBtn")) {
 
         bankName.value = bank.bank;
 
+        bankSearchInput.value = bank.bank;
+
+selectedBankLogo = bank.logo || "";
+
+selectedBankText.textContent =
+    bank.bank || "No Bank Selected";
+
+    document.querySelectorAll('input[name="category"]').forEach(item => {
+
+    item.checked = item.value === bank.category;
+
+});
+
+
+if(bank.logo){
+
+    logoPreview.src = bank.logo;
+
+    logoPreview.style.display = "block";
+
+}else{
+
+    logoPreview.style.display = "none";
+
+}
+
+
         branchName.value = bank.branch;
 
         remarks.value = bank.remarks;
@@ -1222,34 +1417,6 @@ window.addEventListener("click", (e) => {
 });
 
 
-// =====================================
-// INITIAL RENDER
-// =====================================
-
-renderBanks();
-
-// =====================================
-// LIVE PREVIEW
-// =====================================
-
-bankLogo.addEventListener("change", () => {
-
-    const file = bankLogo.files[0];
-
-    if (!file) {
-
-        logoPreview.style.display = "none";
-        return;
-
-    }
-
-    logoPreview.src = URL.createObjectURL(file);
-
-    logoPreview.style.display = "block";
-
-});
-
-
 qrImage.addEventListener("change", () => {
 
     const file = qrImage.files[0];
@@ -1371,4 +1538,499 @@ const savedView = localStorage.getItem("viewMode");
 if(savedView === "list"){
     document.body.classList.add("listMode");
     document.body.classList.remove("gridMode");
+}
+
+// =====================================
+// BANK DROPDOWN FUNCTIONS
+// =====================================
+
+function getAvailableBanks(){
+
+    const firebaseNames =
+        bankLogos
+            .map(item => item.name)
+            .filter(Boolean);
+
+    const allNames =
+        [...defaultBankNames, ...firebaseNames];
+
+    return [...new Set(allNames)].sort();
+
+}
+
+
+function getBankLogo(name){
+
+    const item = bankLogos.find(
+        b =>
+            b.name &&
+            b.name.toLowerCase() === name.toLowerCase()
+    );
+
+    return item ? item.logo : "";
+
+}
+
+
+function renderBankDropdown(keyword = ""){
+
+    if(!bankDropdown) return;
+
+    const search =
+        String(keyword || "").toLowerCase().trim();
+
+    const names =
+        getAvailableBanks().filter(name =>
+            name.toLowerCase().includes(search)
+        );
+
+    bankDropdown.innerHTML = "";
+
+    if(names.length === 0){
+
+        bankDropdown.innerHTML = `
+            <div class="bankOption">
+                No Bank Found
+            </div>
+        `;
+
+        return;
+
+    }
+
+    names.forEach(name => {
+
+        const logo = getBankLogo(name);
+
+        const option =
+            document.createElement("div");
+
+        option.className = "bankOption";
+
+        option.innerHTML = `
+            ${
+                logo
+                ?
+                `<img src="${logo}">`
+                :
+                `<div class="noBankLogo">🏦</div>`
+            }
+
+            <div class="bankOptionName">
+                ${escapeHTML(name)}
+            </div>
+        `;
+
+        option.addEventListener("click", () => {
+            selectBank(name);
+        });
+
+        bankDropdown.appendChild(option);
+
+    });
+
+}
+
+
+
+function selectBank(name){
+
+    bankName.value = name;
+
+    bankSearchInput.value = name;
+
+    selectedBankLogo = getBankLogo(name);
+
+    selectedBankText.textContent = name;
+
+    if(selectedBankLogo){
+
+        logoPreview.src = selectedBankLogo;
+
+        logoPreview.style.display = "block";
+
+    }else{
+
+        logoPreview.style.display = "none";
+
+    }
+
+    bankDropdown.classList.remove("show");
+
+}
+
+bankSearchInput.addEventListener("focus", () => {
+
+    renderBankDropdown(
+        bankSearchInput.value
+    );
+
+    bankDropdown.classList.add("show");
+
+});
+
+
+bankSearchInput.addEventListener("input", () => {
+
+    renderBankDropdown(
+        bankSearchInput.value
+    );
+
+    bankDropdown.classList.add("show");
+
+});
+
+
+document.addEventListener("click", (e) => {
+
+    if(!e.target.closest("#bankSelector")){
+
+        bankDropdown.classList.remove("show");
+
+    }
+
+});
+
+
+// =====================================
+// BANK LOGO MANAGER
+// =====================================
+
+const bankLogoBtn =
+    document.getElementById("bankLogoBtn");
+
+const bankLogoModal =
+    document.getElementById("bankLogoModal");
+
+const closeBankLogoModal =
+    document.getElementById("closeBankLogoModal");
+
+const logoBankName =
+    document.getElementById("logoBankName");
+
+const logoBankFile =
+    document.getElementById("logoBankFile");
+
+const bankLogoManagerPreview =
+    document.getElementById(
+        "bankLogoManagerPreview"
+    );
+
+const saveBankLogo =
+    document.getElementById("saveBankLogo");
+
+const logoSearch =
+    document.getElementById("logoSearch");
+
+const bankLogoList =
+    document.getElementById("bankLogoList");
+
+let editingLogoId = null;
+
+let logoPreviewData = "";
+
+
+bankLogoBtn.addEventListener("click", () => {
+
+    document.querySelectorAll(".menuBtn")
+        .forEach(btn =>
+            btn.classList.remove("active")
+        );
+
+    bankLogoBtn.classList.add("active");
+
+    bankLogoModal.style.display = "flex";
+
+    renderBankLogoManager();
+
+});
+
+
+closeBankLogoModal.addEventListener("click", () => {
+
+    bankLogoModal.style.display = "none";
+
+    clearLogoManagerForm();
+
+});
+
+
+logoBankFile.addEventListener("change", async () => {
+
+    const file = logoBankFile.files[0];
+
+    if(!file) return;
+
+    logoPreviewData =
+        await fileToBase64(file);
+
+    bankLogoManagerPreview.src =
+        logoPreviewData;
+
+    bankLogoManagerPreview.style.display =
+        "block";
+
+});
+
+
+saveBankLogo.addEventListener("click", async () => {
+
+    const name =
+        logoBankName.value.trim();
+
+    if(!name){
+
+        showToast("Enter Bank Name");
+
+        return;
+
+    }
+
+    if(!logoPreviewData){
+
+        showToast("Select Bank Logo");
+
+        return;
+
+    }
+
+    try{
+
+        if(editingLogoId){
+
+            await db.collection("bankLogos")
+                .doc(editingLogoId)
+                .update({
+
+                    name: name,
+
+                    logo: logoPreviewData
+
+                });
+
+            showToast("Bank Logo Updated");
+
+        }else{
+
+            const existing =
+                bankLogos.find(
+                    b =>
+                    b.name.toLowerCase() ===
+                    name.toLowerCase()
+                );
+
+            if(existing){
+
+                await db.collection("bankLogos")
+                    .doc(existing.id)
+                    .update({
+
+                        name: name,
+
+                        logo: logoPreviewData
+
+                    });
+
+                showToast("Bank Logo Updated");
+
+            }else{
+
+                await db.collection("bankLogos")
+                    .add({
+
+                        name: name,
+
+                        logo: logoPreviewData,
+
+                        createdAt:
+                            firebase.firestore.FieldValue.serverTimestamp()
+
+                    });
+
+                showToast("Bank Logo Added");
+
+            }
+
+        }
+
+        clearLogoManagerForm();
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast("Logo Save Failed");
+
+    }
+
+});
+
+
+function clearLogoManagerForm(){
+
+    editingLogoId = null;
+
+    logoBankName.value = "";
+
+    logoBankFile.value = "";
+
+    logoPreviewData = "";
+
+    bankLogoManagerPreview.src = "";
+
+    bankLogoManagerPreview.style.display =
+        "none";
+
+}
+
+
+function renderBankLogoManager(){
+
+    if(!bankLogoList) return;
+
+    const keyword =
+        (logoSearch.value || "")
+        .toLowerCase()
+        .trim();
+
+const filtered =
+    bankLogos.filter(bank =>
+        (bank.name || "")
+            .toLowerCase()
+            .includes(keyword)
+    );
+
+
+    bankLogoList.innerHTML = "";
+
+    if(filtered.length === 0){
+
+        bankLogoList.innerHTML = `
+            <div class="empty">
+                No Bank Logos Added
+            </div>
+        `;
+
+        return;
+
+    }
+
+    filtered.forEach(bank => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "logoManagerItem";
+
+        item.innerHTML = `
+
+            <img src="${bank.logo}">
+
+            <div class="logoManagerName">
+                ${escapeHTML(bank.name)}
+            </div>
+
+            <div class="logoManagerActions">
+
+                <button
+                    class="logoEditBtn"
+                    data-id="${bank.id}">
+                    ✏️ Edit
+                </button>
+
+                <button
+                    class="logoDeleteBtn"
+                    data-id="${bank.id}">
+                    🗑
+                </button>
+
+            </div>
+
+        `;
+
+        bankLogoList.appendChild(item);
+
+    });
+
+}
+
+
+logoSearch.addEventListener("input", () => {
+
+    renderBankLogoManager();
+
+});
+
+
+bankLogoList.addEventListener("click", async (e) => {
+
+    const editBtn =
+        e.target.closest(".logoEditBtn");
+
+    const deleteBtn =
+        e.target.closest(".logoDeleteBtn");
+
+
+    if(editBtn){
+
+        const id = editBtn.dataset.id;
+
+        const bank =
+            bankLogos.find(b => b.id === id);
+
+        if(!bank) return;
+
+        editingLogoId = bank.id;
+
+        logoBankName.value =
+            bank.name;
+
+        logoPreviewData =
+            bank.logo;
+
+        bankLogoManagerPreview.src =
+            bank.logo;
+
+        bankLogoManagerPreview.style.display =
+            "block";
+
+        return;
+
+    }
+
+
+    if(deleteBtn){
+
+        const id =
+            deleteBtn.dataset.id;
+
+        const bank =
+            bankLogos.find(b => b.id === id);
+
+        if(!bank) return;
+
+        if(!confirm(
+            `Delete logo for ${bank.name}?`
+        )) return;
+
+        await db.collection("bankLogos")
+            .doc(id)
+            .delete();
+
+        showToast("Bank Logo Deleted");
+
+    }
+
+});
+
+function escapeHTML(value){
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
 }
