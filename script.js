@@ -498,7 +498,7 @@ categoryInputs.forEach(item=>{
 
 if(selectedCategory===""){
 
-    showToast("Select a Bank Category");
+    showToast("Select a Bank Category", "warning");
 
     return;
 
@@ -615,7 +615,7 @@ try {
 
     console.error("Bank Save Error:", error);
 
-    showToast("Bank Save Failed");
+    showToast("Bank Save Failed", "error");
 
 }
 
@@ -1176,9 +1176,20 @@ if (button.classList.contains("reactivateBtn")) {
 
     // ---------------- DELETE ----------------
 
-    if (button.classList.contains("deleteBtn")) {
+if (button.classList.contains("deleteBtn")) {
 
-    if (!confirm("Delete this bank?")) return;
+    const result = await Swal.fire({
+        title: "Delete this bank?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Delete",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d"
+    });
+
+    if (!result.isConfirmed) return;
 
     await db.collection("banks")
         .doc(bank.id)
@@ -1187,6 +1198,7 @@ if (button.classList.contains("reactivateBtn")) {
     showToast("Bank Deleted");
 
 }
+
 
 if (button.classList.contains("copyAccBtn")) {
 
@@ -1438,19 +1450,20 @@ qrImage.addEventListener("change", () => {
 // TOAST
 // =====================================
 
-function showToast(message){
+function showToast(message, type = "success") {
 
-    toast.textContent = message;
-
-    toast.classList.add("show");
-
-    setTimeout(()=>{
-
-        toast.classList.remove("show");
-
-    },2000);
+    Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: type,
+        title: message,
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true
+    });
 
 }
+
 
 // =====================================
 // RIGHT SIDEBAR BUTTONS
