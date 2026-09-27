@@ -57,6 +57,10 @@
     ⭐ Favorites
     <span id="favoriteCountSide">0</span>
 </button>
+<button class="menuBtn" id="bankLogoBtn">
+    🏦 Bank Logos
+</button>
+
 
 <button class="menuBtn" id="closedBtn">
     🚫 Freezed / Closed
@@ -293,11 +297,45 @@
 </div>
 
         <label>Bank Logo</label>
-        <input type="file"
-               id="bankLogo"
-               accept="image/*">
 
-               <img id="logoPreview" class="previewImage" src="">
+<div class="bankSelector" id="bankSelector">
+
+    <div class="bankSearchBox">
+
+        <span>🔍</span>
+
+        <input
+            type="text"
+            id="bankSearchInput"
+            placeholder="Search Bank Name..."
+            autocomplete="off">
+
+    </div>
+
+    <div
+        id="bankDropdown"
+        class="bankDropdown">
+    </div>
+
+</div>
+
+<input
+    type="hidden"
+    id="bankName">
+
+<div class="selectedBankPreview" id="selectedBankPreview">
+
+    <img
+        id="logoPreview"
+        class="previewImage"
+        src="">
+
+    <div id="selectedBankText">
+        No Bank Selected
+    </div>
+
+</div>
+
 
         <label>QR Image</label>
         <input type="file"
@@ -327,11 +365,6 @@
             <input
                 type="text"
                 id="accountNumber">
-
-            <label>Bank Name</label>
-            <input
-                type="text"
-                id="bankName">
 
             <label>Branch Name</label>
             <input
@@ -400,6 +433,64 @@
 
 </div>
 
+
+<!-- ========================= -->
+<!-- BANK LOGO MANAGER MODAL -->
+<!-- ========================= -->
+
+<div class="modal" id="bankLogoModal">
+
+    <div class="modalContent bankLogoManager">
+
+        <h2>🏦 Bank Logo Manager</h2>
+
+        <label>Bank Name</label>
+
+        <input
+            type="text"
+            id="logoBankName"
+            placeholder="Enter Bank Name">
+
+        <label>Bank Logo</label>
+
+        <input
+            type="file"
+            id="logoBankFile"
+            accept="image/*">
+
+        <img
+            id="bankLogoManagerPreview"
+            class="previewImage"
+            src="">
+
+        <div class="buttonRow">
+
+            <button id="saveBankLogo">
+                💾 Save Logo
+            </button>
+
+            <button id="closeBankLogoModal">
+                ✖ Close
+            </button>
+
+        </div>
+
+        <hr>
+
+        <label>Search Bank Logos</label>
+
+        <input
+            type="text"
+            id="logoSearch"
+            placeholder="🔍 Search Bank...">
+
+        <div id="bankLogoList"></div>
+
+    </div>
+
+</div>
+
+
 <!-- ========================= -->
 <!-- OPTIONS MODAL -->
 <!-- ========================= -->
@@ -447,8 +538,6 @@
 
 <script src="script.js"></script>
 
-
-<body class="gridMode"></body>
 
 </body>
 </html>
