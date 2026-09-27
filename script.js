@@ -292,38 +292,23 @@ db.collection("bankLogos").onSnapshot((snapshot) => {
 // FIREBASE LIVE SYNC
 // =====================================
 
+// =====================================
+// FIREBASE LIVE SYNC
+// =====================================
+
 console.log("POPUP JS STARTED");
 
-db.collection("banks").onSnapshot((snapshot) => {
+db.collection("banks").onSnapshot(
+    (snapshot) => {
 
-    console.log("FIREBASE CONNECTED");
-    console.log("BANK COUNT:", snapshot.size);
-
-    banks = [];
-
-    snapshot.forEach((doc) => {
-
-        console.log("BANK:", doc.id, doc.data());
-
-        banks.push({
-            id: doc.id,
-            ...doc.data()
-        });
-
-    });
-
-    console.log("BANKS ARRAY:", banks);
-
-    renderBanks();
-
-});
-
-
-    db.collection("banks").onSnapshot((snapshot) => {
+        console.log("FIREBASE CONNECTED");
+        console.log("BANK COUNT:", snapshot.size);
 
         banks = [];
 
         snapshot.forEach((doc) => {
+
+            console.log("BANK:", doc.id, doc.data());
 
             banks.push({
                 id: doc.id,
@@ -332,6 +317,9 @@ db.collection("banks").onSnapshot((snapshot) => {
 
         });
 
+        console.log("BANKS ARRAY:", banks);
+
+        // COUNTS
         homeCount.textContent = banks.length;
 
         belowCount.textContent =
@@ -365,15 +353,29 @@ db.collection("banks").onSnapshot((snapshot) => {
         }
 
         if (favoriteBanks2) {
-            favoriteBanks2.textContent =
-                banks.filter(b => b.favorite).length;
+            favoriteBanks2.textContent = banks.filter(
+                b => b.favorite
+            ).length;
         }
 
-    renderBanks();
+        // RENDER
+        renderBanks();
+        renderBankDropdown();
 
-    renderBankDropdown();
+    },
 
-});
+    (error) => {
+
+        console.error("🔥 FIRESTORE BANK LISTENER ERROR:", error);
+
+        showToast(
+            "Firebase connection error",
+            "error"
+        );
+
+    }
+);
+
 
 
 // =====================================
