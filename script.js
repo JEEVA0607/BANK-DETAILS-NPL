@@ -296,85 +296,78 @@ db.collection("bankLogos").onSnapshot((snapshot) => {
 // FIREBASE LIVE SYNC
 // =====================================
 
+// =====================================
+// FIREBASE LIVE SYNC
+// =====================================
+
 console.log("POPUP JS STARTED");
 
-db.collection("banks").onSnapshot(
-    (snapshot) => {
+db.collection("banks")
+    .onSnapshot(
+        (snapshot) => {
 
-        console.log("FIREBASE CONNECTED");
-        console.log("BANK COUNT:", snapshot.size);
+            console.log("FIREBASE CONNECTED");
+            console.log("BANK COUNT:", snapshot.size);
 
-        banks = [];
-
-        snapshot.forEach((doc) => {
-
-            console.log("BANK:", doc.id, doc.data());
-
-            banks.push({
+            banks = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            });
+            }));
 
-        });
+            // COUNTS
+            homeCount.textContent = banks.length;
 
-        console.log("BANKS ARRAY:", banks);
+            belowCount.textContent =
+                banks.filter(b => b.category === "10K Below").length;
 
-        // COUNTS
-        homeCount.textContent = banks.length;
+            aboveCount.textContent =
+                banks.filter(b => b.category === "10K Above").length;
 
-        belowCount.textContent =
-            banks.filter(b => b.category === "10K Below").length;
+            merchantCount.textContent =
+                banks.filter(b => b.category === "Merchant").length;
 
-        aboveCount.textContent =
-            banks.filter(b => b.category === "10K Above").length;
+            favoriteCountSide.textContent =
+                banks.filter(b => b.favorite).length;
 
-        merchantCount.textContent =
-            banks.filter(b => b.category === "Merchant").length;
+            closedCount.textContent =
+                banks.filter(b => b.status === "CLOSED").length;
 
-        favoriteCountSide.textContent =
-            banks.filter(b => b.favorite).length;
+            totalBanks.textContent = banks.length;
 
-        closedCount.textContent =
-            banks.filter(b => b.status === "CLOSED").length;
+            favoriteBanks.textContent =
+                banks.filter(b => b.favorite).length;
 
-        totalBanks.textContent = banks.length;
+            const totalBanks2 =
+                document.getElementById("totalBanks2");
 
-        favoriteBanks.textContent =
-            banks.filter(b => b.favorite).length;
+            const favoriteBanks2 =
+                document.getElementById("favoriteBanks2");
 
-        const totalBanks2 =
-            document.getElementById("totalBanks2");
+            if (totalBanks2) {
+                totalBanks2.textContent = banks.length;
+            }
 
-        const favoriteBanks2 =
-            document.getElementById("favoriteBanks2");
+            if (favoriteBanks2) {
+                favoriteBanks2.textContent =
+                    banks.filter(b => b.favorite).length;
+            }
 
-        if (totalBanks2) {
-            totalBanks2.textContent = banks.length;
+            renderBanks();
+            renderBankDropdown();
+
+        },
+
+        (error) => {
+
+            console.error(
+                "FIRESTORE ERROR:",
+                error.code,
+                error.message
+            );
+
         }
+    );
 
-        if (favoriteBanks2) {
-            favoriteBanks2.textContent = banks.filter(
-                b => b.favorite
-            ).length;
-        }
-
-        // RENDER
-        renderBanks();
-        renderBankDropdown();
-
-    },
-
-    (error) => {
-
-        console.error("🔥 FIRESTORE BANK LISTENER ERROR:", error);
-
-        showToast(
-            "Firebase connection error",
-            "error"
-        );
-
-    }
-);
 
 
 
@@ -649,74 +642,133 @@ function fileToBase64(file) {
 // RENDER BANKS
 // =====================================
 
+// =====================================
+// RENDER BANKS - OPTIMIZED
+// =====================================
 
 function renderBanks() {
-    
-    
+
+    // Clear container once
     bankContainer.innerHTML = "";
 
     let filteredBanks = [...banks];
 
+    // ---------------------------------
+    // CLOSED FILTER
+    // ---------------------------------
+
     if (currentCategory !== "CLOSED") {
 
-    filteredBanks = filteredBanks.filter(bank => bank.status !== "CLOSED");
+        filteredBanks = filteredBanks.filter(
+            bank => bank.status !== "CLOSED"
+        );
 
-}
+    }
 
-if (currentCategory === "10K Below") {
+    // ---------------------------------
+    // CATEGORY FILTER
+    // ---------------------------------
 
-    filteredBanks = filteredBanks.filter(bank => bank.category === "10K Below");
+    if (currentCategory === "10K Below") {
 
-}
+        filteredBanks = filteredBanks.filter(
+            bank => bank.category === "10K Below"
+        );
 
-else if (currentCategory === "10K Above") {
+    }
 
-    filteredBanks = filteredBanks.filter(bank => bank.category === "10K Above");
+    else if (currentCategory === "10K Above") {
 
-}
+        filteredBanks = filteredBanks.filter(
+            bank => bank.category === "10K Above"
+        );
 
-else if (currentCategory === "Merchant") {
+    }
 
-    filteredBanks = filteredBanks.filter(bank => bank.category === "Merchant");
+    else if (currentCategory === "Merchant") {
 
-}
+        filteredBanks = filteredBanks.filter(
+            bank => bank.category === "Merchant"
+        );
 
-else if (currentCategory === "CLOSED") {
+    }
 
-    filteredBanks = filteredBanks.filter(bank => bank.status === "CLOSED");
+    // ---------------------------------
+    // CLOSED
+    // ---------------------------------
 
-}
+    else if (currentCategory === "CLOSED") {
 
-if (currentCategory === "FAVORITES") {
+        filteredBanks = filteredBanks.filter(
+            bank => bank.status === "CLOSED"
+        );
 
-    filteredBanks = filteredBanks.filter(bank => bank.favorite);
+    }
 
-}
+    // ---------------------------------
+    // FAVORITES
+    // ---------------------------------
 
-let keyword = searchInput.value.toLowerCase();
+    if (currentCategory === "FAVORITES") {
 
-let filtered = filteredBanks.filter(bank =>
+        filteredBanks = filteredBanks.filter(
+            bank => bank.favorite
+        );
 
-    (bank.display || "").toLowerCase().includes(keyword) ||
+    }
 
-    (bank.holder || "").toLowerCase().includes(keyword) ||
+    // ---------------------------------
+    // SEARCH
+    // ---------------------------------
 
-    (bank.account || "").toLowerCase().includes(keyword) ||
+    const keyword =
+        (searchInput.value || "")
+            .toLowerCase()
+            .trim();
 
-    (bank.bank || "").toLowerCase().includes(keyword)
+    const filtered = filteredBanks.filter(bank => {
 
-);
+        return (
 
+            (bank.display || "")
+                .toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            (bank.holder || "")
+                .toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            (bank.account || "")
+                .toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            (bank.bank || "")
+                .toLowerCase()
+                .includes(keyword)
+
+        );
+
+    });
+
+    // ---------------------------------
+    // EMPTY
+    // ---------------------------------
 
     if (filtered.length === 0) {
 
         bankContainer.innerHTML = `
 
-        <div class="empty">
+            <div class="empty">
 
-            No Banks Added
+                No Banks Added
 
-        </div>
+            </div>
 
         `;
 
@@ -724,17 +776,33 @@ let filtered = filteredBanks.filter(bank =>
 
     }
 
-    filtered.forEach((bank, index) => {
+    // ---------------------------------
+    // CREATE HTML ONCE
+    // ---------------------------------
 
-        bankContainer.innerHTML += `
+    const html = filtered.map(bank => {
 
-        <div class="bankCard" data-id="${bank.id}">
+        const logo =
+            bank.logo || "";
+
+        const qr =
+            bank.qr || "";
+
+        return `
+
+        <div
+            class="bankCard"
+            data-id="${bank.id}"
+        >
+
+            <!-- HEADER -->
 
             <div class="cardHeader">
 
                 <div class="displayName">
 
-                    🏦 ${bank.display}
+                    🏦
+                    ${escapeHTML(bank.display || "")}
 
                 </div>
 
@@ -747,14 +815,26 @@ let filtered = filteredBanks.filter(bank =>
             </div>
 
 
+            <!-- BODY -->
+
             <div class="cardBody">
 
-                <img class="bankLogo"
 
-                     src="${bank.logo}">
+                <!-- BANK LOGO -->
 
+                <img
+                    class="bankLogo"
+                    src="${logo}"
+                    loading="lazy"
+                    decoding="async"
+                    alt="Bank Logo"
+                >
+
+
+                <!-- DETAILS -->
 
                 <div class="details">
+
 
                     <div class="detailRow">
 
@@ -766,11 +846,14 @@ let filtered = filteredBanks.filter(bank =>
 
                         <div class="detailValue">
 
-                            ${bank.holder || "-"}
+                            ${escapeHTML(
+                                bank.holder || "-"
+                            )}
 
                         </div>
 
                     </div>
+
 
                     <div class="detailRow">
 
@@ -782,11 +865,14 @@ let filtered = filteredBanks.filter(bank =>
 
                         <div class="detailValue">
 
-                            ${bank.account || "-"}
+                            ${escapeHTML(
+                                bank.account || "-"
+                            )}
 
                         </div>
 
                     </div>
+
 
                     <div class="detailRow">
 
@@ -798,11 +884,14 @@ let filtered = filteredBanks.filter(bank =>
 
                         <div class="detailValue">
 
-                            ${bank.bank || "-"}
+                            ${escapeHTML(
+                                bank.bank || "-"
+                            )}
 
                         </div>
 
                     </div>
+
 
                     <div class="detailRow">
 
@@ -814,11 +903,14 @@ let filtered = filteredBanks.filter(bank =>
 
                         <div class="detailValue">
 
-                            ${bank.branch || "-"}
+                            ${escapeHTML(
+                                bank.branch || "-"
+                            )}
 
                         </div>
 
                     </div>
+
 
                     <div class="detailRow">
 
@@ -830,77 +922,146 @@ let filtered = filteredBanks.filter(bank =>
 
                         <div class="detailValue">
 
-                            ${bank.remarks || "-"}
+                            ${escapeHTML(
+                                bank.remarks || "-"
+                            )}
 
                         </div>
 
                     </div>
 
+
                 </div>
 
+
+                <!-- QR -->
 
                 <div class="qrArea">
 
-                    <img class="qrImage"
-
-                         src="${bank.qr}">
+                    <img
+                        class="qrImage"
+                        src="${qr}"
+                        loading="lazy"
+                        decoding="async"
+                        alt="QR Code"
+                    >
 
                 </div>
 
+
             </div>
 
+
+            <!-- ACTION BAR -->
 
             <div class="actionBar">
 
-${currentCategory === "CLOSED" ? `
 
-    <button class="actionBtn reactivateBtn">
-        ✅ Reactivate
-    </button>
+                ${
+                    currentCategory === "CLOSED"
 
-    <button class="actionBtn deleteBtn">
-        🗑 Delete
-    </button>
+                    ?
 
-` : `
+                    `
 
-    <button class="actionBtn viewBtn">
-        👁 View
-    </button>
+                    <button
+                        class="actionBtn reactivateBtn"
+                    >
 
-    <button class="actionBtn copyQrBtn">
-        📷 Copy QR
-    </button>
+                        ✅ Reactivate
 
-    <button class="actionBtn copyDetailsBtn">
-        📄 Details
-    </button>
+                    </button>
 
-    <button class="actionBtn copyAccBtn">
-        📦 Move
-    </button>
 
-    <button class="actionBtn editBtn">
-        ✏ Edit
-    </button>
+                    <button
+                        class="actionBtn deleteBtn"
+                    >
 
-    <button class="actionBtn deleteBtn">
-        🗑 Delete
-    </button>
+                        🗑 Delete
 
-`}
+                    </button>
 
-</div>
+                    `
+
+                    :
+
+                    `
+
+                    <button
+                        class="actionBtn viewBtn"
+                    >
+
+                        👁 View
+
+                    </button>
+
+
+                    <button
+                        class="actionBtn copyQrBtn"
+                    >
+
+                        📷 Copy QR
+
+                    </button>
+
+
+                    <button
+                        class="actionBtn copyDetailsBtn"
+                    >
+
+                        📄 Details
+
+                    </button>
+
+
+                    <button
+                        class="actionBtn copyAccBtn"
+                    >
+
+                        📦 Move
+
+                    </button>
+
+
+                    <button
+                        class="actionBtn editBtn"
+                    >
+
+                        ✏ Edit
+
+                    </button>
+
+
+                    <button
+                        class="actionBtn deleteBtn"
+                    >
+
+                        🗑 Delete
+
+                    </button>
+
+                    `
+                }
+
 
             </div>
+
 
         </div>
 
         `;
 
-    });
+    }).join("");
+
+
+    // ---------------------------------
+    // ONE DOM UPDATE
+    // ---------------------------------
+
+    bankContainer.innerHTML = html;
 
 }
+
 
 
 // =====================================
