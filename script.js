@@ -280,6 +280,17 @@ db.collection("bankLogos").onSnapshot((snapshot) => {
 
     });
 
+    // =========================
+    // BANK LOGO COUNT
+    // =========================
+
+    if (bankLogoCount) {
+
+        bankLogoCount.textContent =
+            bankLogos.length;
+
+    }
+
     renderBankDropdown();
 
     renderBankLogoManager();
@@ -1874,6 +1885,9 @@ document.addEventListener("click", (e) => {
 
 const bankLogoBtn =
     document.getElementById("bankLogoBtn");
+
+const bankLogoCount =
+    document.getElementById("bankLogoCount");
 
 const bankLogoModal =
     document.getElementById("bankLogoModal");
