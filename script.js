@@ -547,7 +547,7 @@ if (selectedBankLogo) {
     // New QR
     if (qrImage.files.length > 0) {
 
-        qrData = await fileToBase64(qrImage.files[0]);
+        qrData = await uploadToCloudinary(qrImage.files[0]);
 
     }
 
@@ -794,10 +794,10 @@ function renderBanks() {
     const html = filtered.map(bank => {
 
         const logo =
-            bank.logo || "";
+            optimizeCloudinary(bank.logo || "", 120);
 
         const qr =
-            bank.qr || "";
+            optimizeCloudinary(bank.qr || "", 400);
 
         return `
 
@@ -1951,8 +1951,7 @@ logoBankFile.addEventListener("change", async () => {
 
     if(!file) return;
 
-    logoPreviewData =
-        await fileToBase64(file);
+    logoPreviewData = await uploadToCloudinary(file);
 
     bankLogoManagerPreview.src =
         logoPreviewData;
@@ -2223,4 +2222,62 @@ function escapeHTML(value){
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
+}
+
+// =====================================
+// CLOUDINARY UPLOAD
+// =====================================
+
+const CLOUDINARY_CLOUD_NAME = "wychgvzg";
+const CLOUDINARY_UPLOAD_PRESET = "bank_qr_upload";
+
+async function uploadToCloudinary(file) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append(
+        "upload_preset",
+        CLOUDINARY_UPLOAD_PRESET
+    );
+
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+
+        const errorText = await response.text();
+
+        console.error(
+            "Cloudinary Upload Error:",
+            errorText
+        );
+
+        throw new Error("Cloudinary upload failed");
+    }
+
+    const data = await response.json();
+
+    return data.secure_url;
+}
+
+// =====================================
+// CLOUDINARY IMAGE OPTIMIZATION
+// =====================================
+
+function optimizeCloudinary(url, width) {
+
+    if (!url || !url.includes("res.cloudinary.com")) {
+        return url;
+    }
+
+    return url.replace(
+        "/image/upload/",
+        `/image/upload/f_auto,q_auto,w_${width}/`
+    );
 }
